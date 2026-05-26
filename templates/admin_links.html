@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}관계망 관리{% endblock %}
+{% block content %}
+<section class="toolbar">
+    <div>
+        <p class="eyebrow">Admin</p>
+        <h1>관계망 관리</h1>
+    </div>
+    <a class="button secondary" href="/admin/regulations">규정 관리</a>
+</section>
+
+<section class="form-page">
+    <h2>관계 링크 등록</h2>
+    <form class="edit-form" method="post" action="/admin/links">
+        <label>출처 조문
+            <select name="source_section_id" required>
+                {% for section in section_options %}
+                <option value="{{ section.id }}">{{ section.regulation_title }} {{ section.item_number }}({{ section.section_title }})</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>본문에서 클릭할 문구
+            <input name="display_text" placeholder="예: 인사규정 제5조" required>
+        </label>
+        <div class="form-grid">
+            <label>연결 유형
+                <select name="link_type">
+                    <option value="internal">내부 규정 팝업</option>
+                    <option value="external">외부 법령 링크</option>
+                </select>
+            </label>
+            <label>대상 내부 조문
+                <select name="target_section_id">
+                    <option value="">외부 링크인 경우 선택하지 않음</option>
+                    {% for section in section_options %}
+                    <option value="{{ section.id }}">{{ section.regulation_title }} {{ section.item_number }}({{ section.section_title }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <label>외부 URL
+            <input name="external_url" placeholder="예: https://www.law.go.kr/법령/...">
+        </label>
+        <label>메모
+            <input name="memo" placeholder="운영자 참고용">
+        </label>
+        <button type="submit">관계 링크 등록</button>
+    </form>
+</section>
+
+<section class="list-panel relation-list">
+    <div class="table-head relation-grid">
+        <span>출처</span>
+        <span>클릭 문구</span>
+        <span>대상</span>
+        <span>관리</span>
+    </div>
+    {% for link in links %}
+    <div class="admin-row relation-grid">
+        <span>{{ link.source_regulation }} {{ link.source_number }}({{ link.source_title }})</span>
+        <strong>{{ link.display_text }}</strong>
+        <span>
+            {% if link.link_type == 'external' %}
+            외부 링크: {{ link.external_url }}
+            {% else %}
+            {{ link.target_regulation }} {{ link.target_number }}({{ link.target_title }})
+            {% endif %}
+        </span>
+        <form method="post" action="/admin/links/{{ link.id }}/delete">
+            <button class="button secondary" type="submit">삭제</button>
+        </form>
+    </div>
+    {% else %}
+    <p class="empty">등록된 관계 링크가 없습니다.</p>
+    {% endfor %}
+</section>
+{% endblock %}

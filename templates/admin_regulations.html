@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}관리자{% endblock %}
+{% block content %}
+<section class="toolbar">
+    <div>
+        <p class="eyebrow">Admin</p>
+        <h1>규정 관리</h1>
+    </div>
+    <a class="button" href="/admin/regulations/new">새 규정 등록</a>
+</section>
+
+<form class="list-panel admin-order-form" method="post" action="/admin/regulations/home-order">
+    <div class="table-head admin-grid">
+        <span>홈</span>
+        <span>순서</span>
+        <span>규정</span>
+        <span>관리</span>
+    </div>
+    {% for row in rows %}
+    <div class="admin-row admin-grid">
+        <label class="check-cell">
+            <input type="checkbox" name="visible_ids" value="{{ row.id }}" {% if row.home_visible %}checked{% endif %}>
+            노출
+        </label>
+        <input class="order-input" type="number" name="sort_order_{{ row.id }}" value="{{ row.home_sort_order }}" min="1">
+        <a class="admin-title" href="/regulations/{{ row.id }}">
+            <strong>{{ row.title }}</strong>
+            <span>{{ row.category_name }} · {{ row.department_name }}</span>
+        </a>
+        <div class="admin-actions">
+            <a class="button secondary" href="/admin/regulations/{{ row.id }}/edit">편집</a>
+            <a class="button secondary" href="/admin/regulations/{{ row.id }}/versions/new">버전 추가</a>
+        </div>
+    </div>
+    {% else %}
+    <p class="empty">등록된 규정이 없습니다.</p>
+    {% endfor %}
+    {% if rows %}
+    <div class="form-actions">
+        <button type="submit">홈 노출 순서 저장</button>
+    </div>
+    {% endif %}
+</form>
+{% endblock %}

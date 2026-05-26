@@ -1,0 +1,9 @@
+<article class="section-preview">
+    <p class="eyebrow">Internal Reference</p>
+    <h2>{{ target.regulation_title }} {{ target.item_number }}({{ target.title }})</h2>
+    <p class="meta">시행 {{ target.effective_date }}</p>
+    {% if target.amendment_note %}
+    <p class="amendment-note">{{ target.amendment_note }}</p>
+    {% endif %}
+    <pre class="law-body">{{ target.content }}</pre>
+</article>

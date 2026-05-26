@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}규정 검색{% endblock %}
+{% block content %}
+<section class="toolbar">
+    <div>
+        <p class="eyebrow">Search</p>
+        <h1>규정 검색</h1>
+    </div>
+    <a class="button" href="/admin/regulations/new">규정 등록</a>
+</section>
+
+<form class="filter-bar compact-filter" method="get" action="/regulations">
+    <input name="q" value="{{ q }}" placeholder="규정명, 조문, 개정이유 검색">
+    <select name="category_id">
+        <option value="">전체 분류</option>
+        {% for category in categories %}
+        <option value="{{ category.id }}" {% if category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">검색</button>
+</form>
+
+<section class="list-panel">
+    <div class="table-head regulation-grid">
+        <span>규정명</span>
+        <span>분류</span>
+        <span>관리부서</span>
+        <span>시행일</span>
+    </div>
+    {% for row in rows %}
+    <a class="row-link regulation-grid" href="/regulations/{{ row.id }}">
+        <span class="row-title">{{ row.title }}{% if row.regulation_number %} <small>{{ row.regulation_number }}</small>{% endif %}</span>
+        <span>{{ row.category_name }}</span>
+        <span>{{ row.department_name }}</span>
+        <span>{{ row.latest_effective_date or "-" }}</span>
+    </a>
+    {% else %}
+    <p class="empty">검색 결과가 없습니다.</p>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}{{ regulation.title }}{% endblock %}
+{% block page_class %}detail-page{% endblock %}
+{% block content %}
+<aside class="law-sidebar">
+    <div class="sidebar-title">규정 목록</div>
+    <div class="sidebar-list expanded-list">
+        {% for item in sidebar_regulations %}
+        <div class="sidebar-group {% if item.id == regulation.id %}active{% endif %}">
+            <a class="sidebar-item" href="/regulations/{{ item.id }}">
+                <strong>{{ loop.index }}. {{ item.title }}</strong>
+                <span>[시행 {{ item.effective_date }}] {{ item.regulation_number or "" }}</span>
+            </a>
+            {% if item.id == regulation.id %}
+            <div class="sidebar-tree">
+                <button class="tree-toggle" type="button" data-target="body-tree" aria-expanded="true">
+                    <span class="toggle-symbol">-</span> 본문
+                </button>
+                <div id="body-tree" class="tree-children">
+                    {% for section in sections %}
+                    <a class="tree-item" href="#section-{{ section.id }}">› {{ section.item_number }} {{ section.title }}</a>
+                    {% endfor %}
+                </div>
+                <button class="tree-toggle" type="button" data-target="attachment-tree" aria-expanded="true">
+                    <span class="toggle-symbol">-</span> 별표/서식
+                </button>
+                <div id="attachment-tree" class="tree-children">
+                    {% for file in attachments %}
+                    <a class="tree-item" href="?version_id={{ version.id }}&tab=attachments">› {{ file.title }}</a>
+                    {% else %}
+                    <span class="tree-empty">등록된 파일 없음</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <p class="empty compact">표시할 규정이 없습니다.</p>
+        {% endfor %}
+    </div>
+</aside>
+
+<section class="law-workspace">
+    <nav class="law-tabs">
+        {% set base = '/regulations/' ~ regulation.id ~ '?version_id=' ~ version.id ~ '&tab=' %}
+        <a class="{% if tab == 'body' %}active{% endif %}" href="{{ base }}body">본문</a>
+        <a class="{% if tab == 'reason' %}active{% endif %}" href="{{ base }}reason">제정/개정이유</a>
+        <a class="{% if tab == 'attachments' %}active{% endif %}" href="{{ base }}attachments">별표/서식</a>
+        <a class="{% if tab == 'history' %}active{% endif %}" href="{{ base }}history">연혁</a>
+    </nav>
+
+    <div class="law-tools">
+        <form class="version-picker compact-picker" method="get" action="/regulations/{{ regulation.id }}">
+            <input type="hidden" name="tab" value="{{ tab }}">
+            <label for="version_id">버전</label>
+            <select id="version_id" name="version_id" onchange="this.form.submit()">
+                {% for item in versions %}
+                <option value="{{ item.id }}" {% if item.id == version.id %}selected{% endif %}>
+                    {{ item.version_label }} · 시행 {{ item.effective_date }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+        <div class="tool-actions">
+            <a class="button secondary small-button" href="/admin/regulations/{{ regulation.id }}/edit">현재 상태 편집</a>
+            <a class="button secondary small-button" href="/admin/regulations/{{ regulation.id }}/versions/new">버전 추가</a>
+        </div>
+    </div>
+
+    <article class="law-document" id="document-body">
+        <header class="document-title">
+            <h1>{{ regulation.title }}</h1>
+            <p>
+                [시행 {{ version.effective_date }}]
+                {% if version.promulgation_date %} [승인 {{ version.promulgation_date }}]{% endif %}
+                [{{ version.amendment_type }}]
+            </p>
+            <p class="department-line">{{ regulation.department_name }}</p>
+        </header>
+
+        {% if tab == 'body' %}
+        {% for section_item in rendered_sections %}
+        {% set section = section_item.row %}
+        <section class="article-section" id="section-{{ section.id }}">
+            <h2>
+                {{ section.item_number }}({{ section.title }})
+                {% if section.amendment_note %}<span class="amendment-note">{{ section.amendment_note }}</span>{% endif %}
+            </h2>
+            <div class="law-body linked-body">{{ section_item.content_html }}</div>
+        </section>
+        {% else %}
+        <pre class="law-body">{{ version.body }}</pre>
+        {% endfor %}
+        {% elif tab == 'reason' %}
+        <section class="reason-panel">
+            <h2>제정/개정이유</h2>
+            <pre class="law-body">{{ version.reason }}</pre>
+        </section>
+        {% elif tab == 'attachments' %}
+        <section class="attachment-list">
+            {% for file in attachments %}
+            <a class="attachment-item" href="/attachments/{{ file.id }}/download">
+                <strong>{{ file.title }}</strong>
+                <span>{{ file.file_name }}</span>
+            </a>
+            {% else %}
+            <p class="empty">이 버전에 등록된 별표/서식이 없습니다.</p>
+            {% endfor %}
+        </section>
+        {% elif tab == 'history' %}
+        <section class="history-list">
+            {% for item in versions %}
+            <a class="history-item" href="/regulations/{{ regulation.id }}?version_id={{ item.id }}&tab=body">
+                <strong>{{ item.effective_date }} · {{ item.amendment_type }}</strong>
+                <span>{{ item.version_label }}</span>
+                <small>{{ item.reason[:120] }}{% if item.reason|length > 120 %}...{% endif %}</small>
+            </a>
+            {% endfor %}
+        </section>
+        {% endif %}
+    </article>
+</section>
+
+<div class="modal-backdrop" id="section-modal" hidden>
+    <div class="modal-panel">
+        <button class="modal-close" type="button" aria-label="닫기">×</button>
+        <div id="section-modal-content"></div>
+    </div>
+</div>
+<script src="{{ url_for('static', path='/js/detail.js') }}"></script>
+{% endblock %}

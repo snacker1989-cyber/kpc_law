@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}사내규정 정보센터{% endblock %}
+{% block content %}
+<section class="content-section flush-top">
+    <div class="section-head">
+        <h1>주요 규정</h1>
+    </div>
+    <div class="list-panel">
+        <div class="table-head regulation-grid">
+            <span>규정명</span>
+            <span>분류</span>
+            <span>소관부서</span>
+            <span>시행일</span>
+        </div>
+        {% for item in featured %}
+        <a class="row-link regulation-grid" href="/regulations/{{ item.id }}">
+            <span class="row-title">{{ item.title }}{% if item.regulation_number %} <small>{{ item.regulation_number }}</small>{% endif %}</span>
+            <span>{{ item.category_name }}</span>
+            <span>{{ item.department_name }}</span>
+            <span>{{ item.amendment_type }} · {{ item.effective_date }}</span>
+        </a>
+        {% else %}
+        <p class="empty">홈에 노출하도록 지정된 규정이 없습니다.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

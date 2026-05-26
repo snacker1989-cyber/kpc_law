@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}현재 상태 편집{% endblock %}
+{% block content %}
+<section class="form-page">
+    <p class="eyebrow">Admin</p>
+    <h1>{{ regulation.title }} 현재 상태 편집</h1>
+    <form class="edit-form" method="post" action="/admin/regulations/{{ regulation.id }}/edit">
+        <label>규정명 <input name="title" value="{{ regulation.title }}" required></label>
+        <label>규정번호 <input name="regulation_number" value="{{ regulation.regulation_number or '' }}"></label>
+        <div class="form-grid">
+            <label>분류
+                <select name="category_id" required>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id == regulation.category_id %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>관리부서 <input name="department_name" value="{{ regulation.department_name }}" required></label>
+        </div>
+        <div class="form-grid">
+            <label>버전명 <input name="version_label" value="{{ version.version_label }}" required></label>
+            <label>개정유형
+                <select name="amendment_type" required>
+                    {% for kind in ["제정", "일부개정", "전부개정", "폐지"] %}
+                    <option {% if kind == version.amendment_type %}selected{% endif %}>{{ kind }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="form-grid">
+            <label>공포/승인일 <input type="date" name="promulgation_date" value="{{ version.promulgation_date or '' }}"></label>
+            <label>시행일 <input type="date" name="effective_date" value="{{ version.effective_date }}" required></label>
+        </div>
+        <label>제정/개정이유 <textarea name="reason" rows="5">{{ version.reason }}</textarea></label>
+
+        <section class="section-editor">
+            <div class="section-editor-head">
+                <h2>본문 조문</h2>
+                <span>저장하면 새 버전을 만들지 않고 현재 최신 상태가 수정됩니다.</span>
+            </div>
+            {% for section in sections %}
+            <div class="section-row">
+                <input name="section_numbers" value="{{ section.item_number }}" aria-label="조 번호">
+                <input name="section_titles" value="{{ section.title }}" aria-label="조문 제목">
+                <input name="section_notes" value="{{ section.amendment_note }}" placeholder="개정태그" aria-label="개정태그">
+                <textarea name="section_contents" rows="4">{{ section.content }}</textarea>
+            </div>
+            {% endfor %}
+            {% for i in range(1, 4) %}
+            <div class="section-row">
+                <input name="section_numbers" placeholder="제{{ sections|length + i }}조" aria-label="조 번호">
+                <input name="section_titles" placeholder="조문 제목" aria-label="조문 제목">
+                <input name="section_notes" placeholder="개정태그 예: (2018.12.13. 신설)" aria-label="개정태그">
+                <textarea name="section_contents" rows="4" placeholder="추가 조문 내용"></textarea>
+            </div>
+            {% endfor %}
+        </section>
+
+        <button type="submit">현재 상태 저장</button>
+    </form>
+</section>
+{% endblock %}
